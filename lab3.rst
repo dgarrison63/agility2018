@@ -100,7 +100,7 @@ created above in step #2.
 
 The label, **f5type: virtual-server**, in the ConfigMap definition is what triggers the F5 Container Connector to process this ConfigMap.
 
-A **ConfigMap** points to a **Service** which points to a **Pod(s)** that is hosting the application.
+A **ConfigMap** points to a **Service** which points to a **Pod(s)** where the application is running.
 
 From ose-master, review the following deployment: demo-app-configmap.yaml
 
@@ -179,7 +179,7 @@ The F5 Container Connector reads the Route resource and creates a virtual server
 creates a layer 7 BIG-IP traffic policy and associates it with the virtual server.  This layer 7 traffic policy evaluates the hostname or URI path from the request and
 forwards the traffic to the pool associated with that path.
 
-**Route** points to a **Service(s)** which points to **Pod(s)** associated with the application
+A **Route** points to a **Service(s)** which points to a **Pod(s)** where the application is running.
 
 .. NOTE:: 
 
@@ -196,7 +196,7 @@ To complete this exercise, we will perform the following steps:
 
 * Step 1: Deploy a demo application
 * Step 2: Create a service to expose the demo application
-* Step 3: Create a ConfigMap that declares desired BIG-IP configuration
+* Step 3: Create a Route that defines routing rules based on hostname
 * Step 4: Review the BIG-IP configuration
 
 **Step 1:** Deploy demo application
