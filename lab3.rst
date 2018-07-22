@@ -310,7 +310,7 @@ Just as in the previous excercise, the F5 Container Connector reads the Route re
 creates a layer 7 BIG-IP traffic policy and associates it with the virtual server.  This layer 7 traffic policy evaluates the hostname or URI path from the request and
 forwards the traffic to the pool associated with that path.
 
-However, in order to support A/B testing using OpenShift routes, the Container Connector creates an iRule on the BIG-IP which handles the connection routing based on the assigned weights.
+However, in order to support A/B testing using OpenShift routes, the Container Connector creates an iRule and a datagroup on the BIG-IP which handles the connection routing based on the assigned weights.
 
 To complete this exercise, we will perform the following steps:
 
