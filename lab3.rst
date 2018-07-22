@@ -11,7 +11,13 @@ In the following exercises, we will create the following OpenShift resource type
 * ConfigMaps
 * Routes
 
-Additionally, we will also create variations of each resource type
+Additionally, we will also create variations of each resource type.
+
+.. NOTE::
+
+    All the resource definition yaml files have been pre-created and can be found on the ose-master server under /root/agility2018/apps
+
+
 
 ConfigMap - Basic
 ------------------
@@ -77,7 +83,7 @@ From ose-master, review the following deployment: demo-app-service.yaml
         app: f5demo
         tier: frontend
 
-Now that we have reviewed the Service, we need to actually create the Service by deploying it to OpenShift by using the "oc create" command:
+Now that we have reviewed the Service, we need to actually create the Service by deploying it to OpenShift by using the **oc create** command:
 
 .. code-block:: console
 
@@ -94,7 +100,7 @@ created above in step #2.
 
 The label, **f5type: virtual-server**, in the ConfigMap definition is what triggers the F5 Container Connector to process this ConfigMap.
 
-**ConfigMap** points to a  **Service** which points to **Pod(s)** associated with the application
+A **ConfigMap** points to a **Service** which points to a **Pod(s)** that is hosting the application.
 
 From ose-master, review the following deployment: demo-app-configmap.yaml
 
@@ -144,7 +150,7 @@ From ose-master, review the following deployment: demo-app-configmap.yaml
 
 
 
-Now that we have reviewed the ConfigMap, we need to actually create the ConfigMap by deploying it to OpenShift by using the "oc create" command:
+Now that we have reviewed the ConfigMap, we need to actually create the ConfigMap by deploying it to OpenShift by using the **oc create** command:
 
 .. code-block:: console
 
@@ -252,7 +258,7 @@ From ose-master, review the following deployment: app-deployment.yaml
         "loadBalancer":
 
 
-Now that we have reviewed the Deployment, we need to actually create it by deploying it to OpenShift by using the "oc create" command:
+Now that we have reviewed the Deployment, we need to actually create it by deploying it to OpenShift by using the **oc create** command:
 
 .. code-block:: console
 
@@ -298,7 +304,7 @@ From ose-master, review the following deployment: demo-app-route.yaml
         name: front-end
 
 
-Now that we have reviewed the Route, we need to actually create it by deploying it to OpenShift by using the "oc create" command:
+Now that we have reviewed the Route, we need to actually create it by deploying it to OpenShift by using the **oc create** command:
 
 .. code-block:: console
 
@@ -315,9 +321,9 @@ TODO
 Route - A/B Testing
 -------------------
 
-The F5 Container Connector supports application A/B application testing e.g two different versions of the same application, by using the **weight** parameter of OpenShift Routes.  The **weight** parameter allows you
+The F5 Container Connector supports A/B application testing e.g two different versions of the same application, by using the **weight** parameter of OpenShift Routes.  The **weight** parameter allows you
 to establish relative ratios between application "A" and application "B". So, for example, if the first route specifies a weight of 20 and the second a weight of 10,
-the application associated with the first route will get twice the number of connections as the application associated with the second route.
+the application associated with the first route will get twice the number of requests as the application associated with the second route.
 
 Just as in the previous excercise, the F5 Container Connector reads the Route resource and creates a virtual server, node(s), a pool per route path and pool members.  Additionally, the Container Connector
 creates a layer 7 BIG-IP traffic policy and associates it with the virtual server.  This layer 7 traffic policy evaluates the hostname or URI path from the request and
@@ -391,7 +397,7 @@ From ose-master, review the following deployment: app-deployment-ab-v1.yaml
         "loadBalancer":
 
 
-Now that we have reviewed the Deployment, we need to actually create it by deploying it to OpenShift by using the "oc create" command:
+Now that we have reviewed the Deployment, we need to actually create it by deploying it to OpenShift by using the **oc create** command:
 
 .. code-block:: console
 
@@ -458,7 +464,7 @@ From ose-master, review the following deployment: app-deployment-ab-v2.yaml
         "loadBalancer":
 
 
-Now that we have reviewed the Deployment, we need to actually create it by deploying it to OpenShift by using the "oc create" command:
+Now that we have reviewed the Deployment, we need to actually create it by deploying it to OpenShift by using the **oc create** command:
 
 .. code-block:: console
 
@@ -510,14 +516,14 @@ From ose-master, review the following Route: app-route-ab.yaml
         weight: 10
 
 
-Now that we have reviewed the Route, we need to actually create it by deploying it to OpenShift by using the "oc create" command:
+Now that we have reviewed the Route, we need to actually create it by deploying it to OpenShift by using the **oc create** command:
 
 .. code-block:: console
 
     [root@ose-mstr01 garrison]# oc create -f app-route-ab.yaml
     route "my-frontend-route-ab-unsecured" created
 
-Verify that the Route was successfully creating by using the OpenShift "oc get route" command.  Note that, under the "SERVICES" column, the two applications are listed along with their request distribution percentages.
+Verify that the Route was successfully creating by using the OpenShift **oc get route** command.  Note that, under the "SERVICES" column, the two applications are listed along with their request distribution percentages.
 
 .. code-block:: console
 
