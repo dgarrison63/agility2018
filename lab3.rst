@@ -17,8 +17,9 @@ ConfigMap - Basic
 ------------------
 
 An OpenShift ConfigMap is one of the resource types that the F5 Container Connector watches for.    The Container Connector will read the ConfigMap
-and create a virtual server, node(s), a pool, pool member(s) and a pool health monitor. 
-In this exercise, we will create a ConfigMap that declaritevly defines the objects that the Container Connector should configure on the BIG-IP.
+and create a virtual server, node(s), a pool, pool member(s) and a pool health monitor.
+
+In this exercise, we will create a ConfigMap that defines the objects that the Container Connector should configure on the BIG-IP.
 
 To complete this exercise, we will perform the following steps:
 
@@ -93,7 +94,7 @@ created above in step #2.
 
 The label, **f5type: virtual-server**, in the ConfigMap definition is what triggers the F5 Container Connector to process this ConfigMap.
 
-ConfigMap -> Service -> App
+**ConfigMap** points to a  **Service** which points to **Pod(s)** associated with the application
 
 From ose-master, review the following deployment: demo-app-configmap.yaml
 
@@ -152,6 +153,11 @@ Now that we have reviewed the ConfigMap, we need to actually create the ConfigMa
 
 
 
+**Step 4:** Review BIG-IP configuration
+
+TODO
+
+
 Route - Basic
 ------------------
 
@@ -159,7 +165,7 @@ An OpenShift Route is one of the resource types that the F5 Container Connector 
 to the application "customer", hostname "catalog.example.com", might map to the application "catalog", etc.
 
 Similarily, a Route can refer to a URI path so, for example, the URI path "/customer" might map to the application called "customer" and URI path "/catalog",
-might map to the application called "catalog".  If a Route only specifies URI paths, the Route applies to all hostnames.
+might map to the application called "catalog".  If a Route only specifies URI paths, the Route applies to all HTTP request hostnames.
 
 Additionally, a Route can refer to both a hostname and a URI path.  So, for example, the 
 
@@ -167,14 +173,17 @@ The F5 Container Connector reads the Route resource and creates a virtual server
 creates a layer 7 BIG-IP traffic policy and associates it with the virtual server.  This layer 7 traffic policy evaluates the hostname or URI path from the request and
 forwards the traffic to the pool associated with that path.
 
-.. note:: 
+**Route** points to a **Service(s)** which points to **Pod(s)** associated with the application
+
+.. NOTE:: 
 
     All Route resources share two virtual servers:
 
     * **ose-vserver** for HTTP traffic, and
     * **https-ose-vserver** for HTTPS traffic
 
-    The Container Connector assigns the names shown above by default. To set set custom names, define route-http-vserver and route-https-vserver in the BIG-IP Container Connector Deployment
+    The Container Connector assigns the names shown above by default. To set set custom names, define route-http-vserver and route-https-vserver in the BIG-IP Container Connector Deployment.
+    Please see the documentation at: http://clouddocs.f5.com for more details.
 
 
 To complete this exercise, we will perform the following steps:
@@ -185,6 +194,7 @@ To complete this exercise, we will perform the following steps:
 * Step 4: Review the BIG-IP configuration
 
 **Step 1:** Deploy demo application
+
 
 From ose-master, review the following deployment: app-deployment.yaml
 
@@ -305,11 +315,15 @@ TODO
 Route - A/B Testing
 -------------------
 
-The F5 Container Connector supports application A/B testing e.g two different versions of the same application, by using the **weight** parameter of OpenShift Routes.  The **weight** parameter allows you
+The F5 Container Connector supports application A/B application testing e.g two different versions of the same application, by using the **weight** parameter of OpenShift Routes.  The **weight** parameter allows you
 to establish relative ratios between application "A" and application "B". So, for example, if the first route specifies a weight of 20 and the second a weight of 10,
 the application associated with the first route will get twice the number of connections as the application associated with the second route.
 
-In order to support A/B testing using OpenShift routes, the Container Connector creates an iRule on the BIG-IP which handles the connection routing.
+Just as in the previous excercise, the F5 Container Connector reads the Route resource and creates a virtual server, node(s), a pool per route path and pool members.  Additionally, the Container Connector
+creates a layer 7 BIG-IP traffic policy and associates it with the virtual server.  This layer 7 traffic policy evaluates the hostname or URI path from the request and
+forwards the traffic to the pool associated with that path.
+
+However, in order to support A/B testing using OpenShift routes, the Container Connector creates an iRule on the BIG-IP which handles the connection routing based on the assigned weights.
 
 To complete this exercise, we will perform the following steps:
 
@@ -455,6 +469,9 @@ Now that we have reviewed the Deployment, we need to actually create it by deplo
 
 **Step 3:** Create OpenShift Route for A/B testing
 
+The basic Route example from the previous excercise only included one path.  In order to support A/B application testing, a Route must be created that has two paths.
+In OpenShift, the second path is defined in the **alternateBackends** section of a Route resource.
+
 From ose-master, review the following Route: app-route-ab.yaml
 
 .. code-block:: console
@@ -499,6 +516,14 @@ Now that we have reviewed the Route, we need to actually create it by deploying 
 
     [root@ose-mstr01 garrison]# oc create -f app-route-ab.yaml
     route "my-frontend-route-ab-unsecured" created
+
+Verify that the Route was successfully creating by using the OpenShift "oc get route" command.  Note that, under the "SERVICES" column, the two applications are listed along with their request distribution percentages.
+
+.. code-block:: console
+
+    [root@ose-mstr01 garrison]# oc get route
+    NAME                             HOST/PORT              PATH      SERVICES                                        PORT      TERMINATION   WILDCARD
+    my-frontend-route-ab-unsecured   mysite-ab.f5demo.com   /         my-frontend-ab-v1(66%),my-frontend-ab-v2(33%)   8080                    None
 
 
 **Step 4:** Review BIG-IP configuration
