@@ -190,11 +190,13 @@ Now that we have reviewed the ConfigMap, we need to actually create the ConfigMa
 
 TODO
 
+
 **Step 5:** Test the application
 
 In this step, you will use a browser to access the application you previously deployed to OpenShift.
 
 Using the Chrome browser, navigate to http://x.x.x.x to access the application.  On the application web page, the **Server IP** and **Server Port** are the IP address and port of the pod where the application is running. 
+
 
 
 **Step 6:** Scale the application
@@ -226,13 +228,16 @@ From the ose-master host, entering the following command to set the replica coun
 
 Now go examine the BIG-IP pool members...
 
+TODO
+
+
 **Step 7:** Test the scaled application
 
 In this step, you will use a browser to access the application you scaled up.
 
-Using the Chrome browser, navigate to http://x.x.x.x to access the application.  On the application web page, the **Server IP** and **Server Port** are the IP address and port of the pod where the application is running. 
+If you reload the page every few seconds, you should see the **Server IP** address change.  Using the Chrome browser, navigate to http://x.x.x.x to access the application.  On the application web page, the **Server IP** and **Server Port** are the IP address and port of the pod where the application is running. 
 
-Because there is more than one instance of the application running, the BIG-IP load balances the application traffic amongst multiple pods.  If you reload the page every few seconds, you should see the **Server IP** address change.
+Because there is more than one instance of the application running, the BIG-IP load balances the application traffic amongst multiple pods.  
 
 
 
@@ -546,7 +551,7 @@ Verify that the Route was successfully creating by using the OpenShift **oc get 
 TODO
 
 
-Excercise #3: Route - Attach Existing Virtual
+Excercise #4: Route - Attach Existing Virtual
 ---------------------------------------------
 
 The F5 Container Connector allows you to set a few virtual server configuration elements such as...  If there are virtual server configuration settings that 
@@ -647,5 +652,12 @@ From ose-master, run the following commands:
 
     [root@ose-mstr01 ocp]# oc create -f bigip02-cc.yaml
     deployment "bigip02-ctlr" created
+
+
+TODO
+
+
+Excercise #5: Container Connector Troubleshooting
+-------------------------------------------------
 
 
