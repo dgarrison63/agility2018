@@ -235,9 +235,9 @@ TODO
 
 In this step, you will use a browser to access the application you scaled up.
 
-If you reload the page every few seconds, you should see the **Server IP** address change.  Using the Chrome browser, navigate to http://x.x.x.x to access the application.  On the application web page, the **Server IP** and **Server Port** are the IP address and port of the pod where the application is running. 
+Using the Chrome browser, navigate to http://x.x.x.x to access the application.  On the application web page, the **Server IP** and **Server Port** are the IP address and port of the pod where the application is running. 
 
-Because there is more than one instance of the application running, the BIG-IP load balances the application traffic amongst multiple pods.  
+If you reload the page every few seconds, you should see the **Server IP** address change.  Because there is more than one instance of the application running, the BIG-IP load balances the application traffic amongst multiple pods.  
 
 
 
