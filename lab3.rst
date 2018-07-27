@@ -634,9 +634,11 @@ From ose-master, use vi to edit the two Container Connector deployment configura
 In **each** Container Connector deployment configuration file, update the following arguments:
 
 original: --route-http-vserver=ocp-vserver
+
 updated:  --route-http-vserver=my-ocp-vserver
 
-original: --route-https-vserver=ocp-https-vserver 
+original: --route-https-vserver=ocp-https-vserver
+ 
 updated: --route-https-vserver=-my-ocp-https-vserver
 
 **Step 4:** Restart the Container Connectors
