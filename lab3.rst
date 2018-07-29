@@ -205,13 +205,13 @@ were created by the Container Connector using the declarations defined in the Co
 
 .. image:: /_static/class5/ha-cluster.jpg
 
-Knowledge Check: In the network map view, what type OpenShift object type does the pool member IP address represent?  How was the IP address assigned?
+**Knowledge Check:** In the network map view, what type OpenShift object type does the pool member IP address represent?  How was the IP address assigned?
 
 To view the IP address of the virtual server, hover your cursor over the name of the virtual server:
 
 .. image:: /_static/class5/ha-cluster.jpg
 
-Question: What OpenShift object type was used to define the virtual server IP address?
+**Knowledge Check:** What OpenShift object type was used to define the virtual server IP address?
 
 TODO
 
@@ -442,7 +442,7 @@ To view the IP address of the virtual server, hover your cursor over the virtual
 
 .. image:: /_static/class5/ha-cluster.jpg
 
-Knowledge Check: Which OpenShift resource defines the names of the two virtual servers?
+**Knowledge Check:** Which OpenShift resource defines the names of the two virtual servers?
 
 Next, you will view the traffic policy that was created by the Container Connector when it processed the OpenShift route.
 
@@ -460,7 +460,7 @@ Next, click on the rule name listed under the **Rules** section of the policy pa
 
 On the rule page, review the configuration of the rule and note the match condition and rule action settings.
 
-Knowledge Check: Which OpenShift resource defines the hostname to match against?
+**Knowledge Check:** Which OpenShift resource defines the hostname to match against?
 
 
 **Step 5:** Test the application
@@ -700,7 +700,7 @@ Verify that the Route was successfully creating by using the OpenShift **oc get 
     f5-demo-app-bg-route   mysite-bg.f5demo.com   /         node-blue(66%),node-green(33%)   80                      None
 
 
-Knowledge Check: What would the Route percentages be if the weights were 10 and 40?
+**Knowledge Check:** What would the Route percentages be if the weights were 10 and 40?
 
 
 **Step 4:** Review BIG-IP configuration
