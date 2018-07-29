@@ -64,7 +64,7 @@ To complete this exercise, we will perform the following steps:
 
 **Step 1**: Deploy demo application
 
-From ose-master, review the following deployment -> demo-app.yaml
+From ose-master, review the following deployment -> f5-demo-app-deployment.yaml
 
 .. code-block:: console
 
@@ -110,7 +110,9 @@ From ose-master, review the following deployment: demo-app-service.yaml
         app: f5demo
         tier: frontend
 
-Now that we have reviewed the Service, we need to actually create the Service by deploying it to OpenShift by using the **oc create** command:
+Now that we have reviewed the Service, we need to actually create the Service by deploying it to OpenShift by using the **oc create** command.
+
+From ose-master server, issue the following command:
 
 .. code-block:: console
 
@@ -129,7 +131,7 @@ The label, **f5type: virtual-server**, in the ConfigMap definition is what trigg
 
 A **ConfigMap** points to a **Service** which points to a **Pod(s)** where the application is running.
 
-From ose-master, review the ConfigMap resource app-configmap.yaml
+From ose-master, review the ConfigMap resource f5-demo-app-configmap.yaml
 
 .. code-block:: console
 
@@ -188,6 +190,29 @@ Now that we have reviewed the ConfigMap, we need to actually create the ConfigMa
 
 **Step 4:** Review BIG-IP configuration
 
+In this step, we will examine the BIG-IP configuration that was created by the Container Connector when it processed the ConfigMap created in the previous step.
+
+Launch the Chrome browser and click on the bookmark named **biip01.f5.local** to access the BIG-IP GUI:
+
+.. image:: /_static/class5/ha-cluster.jpg
+
+From the BIG-IP login page, enter username=admin and password=admin and click the **Log in** button:
+
+.. image:: /_static/class5/ha-cluster.jpg
+
+Navigate to **Local Traffic -> Network Map** and change the partition to **ocp** using the dropdown in the upper right.  The network map view shows a virtual server, pool and pool member and all of these objects
+were created by the Container Connector using the declarations defined in the ConfigMap.
+
+.. image:: /_static/class5/ha-cluster.jpg
+
+Knowledge Check: In the network map view, what type OpenShift object type does the pool member IP address represent?  How was the IP address assigned?
+
+To view the IP address of the virtual server, hover your cursor over the name of the virtual server:
+
+.. image:: /_static/class5/ha-cluster.jpg
+
+Question: What OpenShift object type was used to define the virtual server IP address?
+
 TODO
 
 
@@ -195,7 +220,12 @@ TODO
 
 In this step, you will use a browser to access the application you previously deployed to OpenShift.
 
-Using the Chrome browser, navigate to http://x.x.x.x to access the application.  On the application web page, the **Server IP** and **Server Port** are the IP address and port of the pod where the application is running. 
+Open a new browser tab and enter the IP address assigned to the virtual server in to the address bar:
+
+.. image:: /_static/class5/ha-cluster.jpg
+
+On the application page, the **Server IP** is the pool member (pod) IP address; the **Server Port** is the port of the virtual server; and the **Client IP** is the IP address
+of the Windows jumphost you are using.
 
 
 
@@ -226,21 +256,44 @@ From the ose-master host, entering the following command to set the replica coun
     deployment "my-frontend" scaled
 
 
-Now go examine the BIG-IP pool members...
+**Step XX:** Review the BIG-IP configuration
+
+In this step, we will examine the BIG-IP configuration for changes that occured after the application was scaled up.
+
+Navigate to **Local Traffic -> Network Map** and change the partition to **ocp** using the dropdown in the upper right.
+
+. image:: /_static/class5/ha-cluster.jpg
+
+
 
 TODO
 
 
 **Step 7:** Test the scaled application
 
-In this step, you will use a browser to access the application you scaled up.
+In this step, you will use the Chrome browser to access the application that you scaled to 10 replicas in a previous step.
 
-Using the Chrome browser, navigate to http://x.x.x.x to access the application.  On the application web page, the **Server IP** and **Server Port** are the IP address and port of the pod where the application is running. 
+Open a new browser tab and enter the IP address assigned to the virtual server in to the address bar:
+
+.. image:: /_static/class5/ha-cluster.jpg
 
 If you reload the page every few seconds, you should see the **Server IP** address change.  Because there is more than one instance of the application running, the BIG-IP load balances the application traffic amongst multiple pods.  
 
 
+**Step XX:** Cleanup deployed resources
 
+In this step, you will remove the deployment and configmap resources you created in the previous steps using the OpenShift **oc delete** command.
+
+From ose-master server, issue the following commands:
+
+.. code-block:: console
+
+    [root@ose-mstr01 tmp]# oc delete -f f5-demo-app-configmap.yaml
+    configmap "f5-demo-app.vs" deleted
+
+    [root@ose-mstr01 tmp]# oc delete -f f5-demo-app-deployment.yaml
+    deployment "f5-demo-app" deleted
+    service "f5-demo-app" deleted
 
 TODO
 
@@ -275,30 +328,30 @@ A **Route** points to a **Service(s)** which points to a **Pod(s)** where the ap
 
 To complete this exercise, we will perform the following steps:
 
-* Step 1: Deploy demo application and it's associated Service
+* Step 1: Deploy demo application and associated Service
 * Step 2: Create a Route that defines routing rules based on hostname
 * Step 3: Review the BIG-IP configuration
 
-**Step 1:** Deploy demo application and it's associated Service
+**Step 1:** Deploy demo application and its associated Service
 
 
-From ose-master, review the following deployment: app-deployment.yaml
+From ose-master, review the following deployment: f5-demo-app-route-deployment.yaml
 
 .. code-block:: console
 
     apiVersion: extensions/v1beta1
     kind: Deployment
     metadata:
-    name: my-frontend
+    name: f5-demo-app-route
     spec:
     replicas: 1
     template:
         metadata:
         labels:
-            app: my-frontend
+            app: f5-demo-app-route
         spec:
         containers:
-        - name: my-frontend
+        - name: f5-demo-app-route
             image: chen23/f5-demo-app:openshift
             ports:
             - containerPort: 8080
@@ -307,9 +360,9 @@ From ose-master, review the following deployment: app-deployment.yaml
     apiVersion: v1
     kind: Service
     metadata:
-    name: my-frontend
+    name: f5-demo-app-route
     labels:
-        name: my-frontend
+        name: f5-demo-app-route
     namespace: f5demo
     spec:
     type: ClusterIP
@@ -317,22 +370,22 @@ From ose-master, review the following deployment: app-deployment.yaml
     - port: 8080
         targetPort: 8080
     selector:
-        app: my-frontend
+        app: f5-demo-app-route
 
 
 Now that we have reviewed the Deployment, we need to actually create it by deploying it to OpenShift by using the **oc create** command:
 
 .. code-block:: console
 
-    root@ose-mstr01 garrison]# oc create -f app-deployment.yaml
-    deployment "my-frontend" created
-    service "my-frontend" created
+    [root@ose-mstr01 tmp]# oc create -f f5-demo-app-route-deployment.yaml
+    deployment "f5-demo-app-route" created
+    service "f5-demo-app-route" created
 
 
 
 **Step 2:** Create OpenShift Route
 
-From ose-master, review the following deployment: demo-app-route.yaml
+From ose-master, review the following deployment: f5-demo-app-route-route.yaml
 
 
 .. code-block:: console
@@ -370,26 +423,86 @@ Now that we have reviewed the Route, we need to actually create it by deploying 
 
 .. code-block:: console
 
-    [root@ose-mstr01 garrison]# oc create -f app-route.yaml
-    route "my-frontend-route-unsecured" created
+    [root@ose-mstr01 tmp]# oc create -f f5-demo-app-route-route.yaml
+    route "f5-demo-app-route" created
 
 
-**Step 3:** Review BIG-IP configuration
+**Step 3:** Review the BIG-IP configuration
 
-TODO
+In this step, we will examine the BIG-IP configuration for changes that occured after the the OpenShift route was deployoed.
+
+Navigate to **Local Traffic -> Network Map** and change the partition to **ocp** using the dropdown in the upper right.
+
+. image:: /_static/class5/ha-cluster.jpg
+
+The network map view shows two virtual servers that were created by the Container Connector when it procssed the Route resource created in the previous step.  One virtual server is for HTTP client traffic
+and the other virtual server is for HTTPS client traffic.
+
+To view the IP address of the virtual server, hover your cursor over the virtual server named **ocp-vserver**
+
+.. image:: /_static/class5/ha-cluster.jpg
+
+Knowledge Check: Which OpenShift resource defines the names of the two virtual servers?
+
+Next, you will view the traffic policy that was created by the Container Connector when it processed the OpenShift route.
+
+Navigate to **Local Traffic -> Policies -> Policy List** and change the partition to **ocp** using the dropdown in the upper right.
+
+. image:: /_static/class5/ha-cluster.jpg
+
+Click on the traffic policy listed uner **Published Policies** to view the policy page for the selected policy:
+
+. image:: /_static/class5/ha-cluster.jpg
+
+Next, click on the rule name listed under the **Rules** section of the policy page to view the rule page for the selected rule:
+
+. image:: /_static/class5/ha-cluster.jpg
+
+On the rule page, review the configuration of the rule and note the match condition and rule action settings.
+
+Knowledge Check: Which OpenShift resource defines the hostname to match against?
+
+
+**Step 5:** Test the application
+
+In this step, you will use a browser to access the application you previously deployed.
+
+Because the Route resource you created specifies a hostname for the path, you will need to use a hostname instead of an IP address to access the demo application. 
+Open a new browser tab and enter the hostname **mysite.f5demo.com** in to the address bar:
+
+.. image:: /_static/class5/ha-cluster.jpg
+
+On the application page, the **Server IP** is the pool member (pod) IP address; the **Server Port** is the port of the virtual server; and the **Client IP** is the IP address
+of the Windows jumphost you are using.
+
+
+**Step XX:** Cleanup deployed resources
+
+In this step, you will remove the Deployment, Service and Route resources you created in the previous steps using the OpenShift **oc delete** command.
+
+From ose-master server, issue the following commands:
+
+.. code-block:: console
+
+    [root@ose-mstr01 tmp]# oc delete -f f5-demo-app-route-route.yaml
+    route "f5-demo-app-route" deleted
+
+    [root@ose-mstr01 tmp]# oc delete -f f5-demo-app-route-deployment.yaml
+    deployment "f5-demo-app-route" deleted
+    service "f5-demo-app-route" deleted
+
+
 
 
 
 Excercise #3: Route - Blue/Green Testing
----------------------------------
+-----------------------------------------
 
-The F5 Container Connector supports Blue/Green application testing e.g two different versions of the same application, by using the **weight** parameter of OpenShift Routes.  The **weight** parameter allows you
+The F5 Container Connector supports Blue/Green application testing e.g testing two different versions of the same application, by using the **weight** parameter of OpenShift Routes.  The **weight** parameter allows you
 to establish relative ratios between application **Blue* and application **Green**. So, for example, if the first route specifies a weight of 20 and the second a weight of 10,
 the application associated with the first route will get twice the number of requests as the application associated with the second route.
 
-Just as in the previous excercise, the F5 Container Connector reads the Route resource and creates a virtual server, node(s), a pool per route path and pool members.  Additionally, the Container Connector
-creates a layer 7 BIG-IP traffic policy and associates it with the virtual server.  This layer 7 traffic policy evaluates the hostname or URI path from the request and
-forwards the traffic to the pool associated with that path.
+Just as in the previous excercise, the F5 Container Connector reads the Route resource and creates a virtual server, node(s), a pool per route path and pool members.
 
 However, in order to support Blue/Green testing using OpenShift routes, the Container Connector creates an iRule and a datagroup on the BIG-IP which handles the connection routing based on the assigned weights.
 
@@ -401,95 +514,134 @@ To complete this exercise, we will perform the following steps:
 * Step 4: Test the application
 
 
-**Step 1:** Deploy version 1 and version 2 of demo application and their related Services
+**Step 1:** Deploy version 1 and version 2 of demo application and their associated Services
 
-From ose-master, review the following deployment: app-deployment-ab.yaml.  
+From ose-master, review the following deployment: f5-demo-app-bg-deployment.yaml 
 
 .. code-block:: console
 
     apiVersion: extensions/v1beta1
     kind: Deployment
     metadata:
-    name: my-frontend-ab-v1
+    name: node-blue
+    namespace: f5demo
     spec:
     replicas: 1
     template:
         metadata:
         labels:
-            app: my-frontend-ab-v1
+            run: node-blue
         spec:
         containers:
-        - name: my-frontend-ab-v1
-            image: chen23/f5-demo-app:openshift
+        - image: "chen23/f5-demo-app"
+            env:
+            - name: F5DEMO_APP
+            value: "website"
+            - name: F5DEMO_NODENAME
+            value: "Node Blue (No SSL)"
+            - name: F5DEMO_NODENAME_SSL
+            value: "Node Blue (SSL)"
+            - name: F5DEMO_COLOR
+            value: "0000FF"
+            - name: F5DEMO_COLOR_SSL
+            value: "0000FF"
+            imagePullPolicy: IfNotPresent
+            name: node-blue
             ports:
-            - containerPort: 8080
+            - containerPort: 80
+            - containerPort: 443
             protocol: TCP
 
     ---
+
     apiVersion: v1
     kind: Service
     metadata:
-    name: my-frontend-ab-v1
+    name: node-blue
     labels:
-        name: my-frontend-ab-v1
+        run: node-blue
     namespace: f5demo
     spec:
-    type: ClusterIP
     ports:
-    - port: 8080
-        targetPort: 8080
+    - port: 80
+        protocol: TCP
+        targetPort: 80
+        name: http
+    - port: 443
+        protocol: TCP
+        targetPort: 443
+        name: https
+    type: ClusterIP
     selector:
-        app: my-frontend-ab-v1
+        run: node-blue
 
     ---
+
     apiVersion: extensions/v1beta1
     kind: Deployment
     metadata:
-    name: my-frontend-ab-v2
+    name: node-green
+    namespace: f5demo
     spec:
     replicas: 1
     template:
         metadata:
         labels:
-            app: my-frontend-ab-v2
+            run: node-green
         spec:
         containers:
-        - name: my-frontend-ab-v2
-            image: chen23/f5-demo-app:openshift
+        - image: "chen23/f5-demo-app"
+            env:
+            - name: F5DEMO_APP
+            value: "website"
+            - name: F5DEMO_NODENAME
+            value: "Node Green (No SSL)"
+            - name: F5DEMO_COLOR
+            value: "99FF99"
+            - name: F5DEMO_NODENAME_SSL
+            value: "Node Green (SSL)"
+            - name: F5DEMO_COLOR_SSL
+            value: "00FF00"
+            imagePullPolicy: IfNotPresent
+            name: node-green
             ports:
-            - containerPort: 8080
+            - containerPort: 80
+            - containerPort: 443
             protocol: TCP
 
     ---
+
     apiVersion: v1
     kind: Service
     metadata:
-    name: my-frontend-ab-v2
+    name: node-green
     labels:
-        name: my-frontend-ab-v2
-    namespace: f5demo
+        run: node-green
     spec:
-    type: ClusterIP
     ports:
-    - port: 8080
-        targetPort: 8080
+    - port: 80
+        protocol: TCP
+        targetPort: 80
+        name: http
+    type: ClusterIP
     selector:
-        app: my-frontend-ab-v2
-
+        run: node-green
 
 Now that we have reviewed the Deployment, we need to actually create it by deploying it to OpenShift by using the **oc create** command:
 
 .. code-block:: console
 
-    [root@ose-mstr01 garrison]# oc create -f app-deployment-ab-v1.yaml
-    deploymentconfig "my-frontend-ab-v1" created
-    service "my-frontend-ab-v1" created
+    [root@ose-mstr01 tmp]# oc create -f f5-demo-app-bg-deployment.yaml
+    deployment "node-blue" created
+    service "node-blue" created
+    deployment "node-green" created
+    service "node-green" created
 
 
 
 **Step 2:** Create OpenShift Route for Blue/Green
 
-The basic Route example from the previous excercise only included one path.  In order to support A/B application testing, a Route must be created that has two paths.
+The basic Route example from the previous excercise only included one path.  In order to support Blue/Green application testing, a Route must be created that has two paths.
 In OpenShift, the second path is defined in the **alternateBackends** section of a Route resource.
 
 From ose-master, review the following Route: app-route-ab.yaml
@@ -500,8 +652,8 @@ From ose-master, review the following Route: app-route-ab.yaml
     kind: Route
     metadata:
     labels:
-        name: my-frontend-route-ab
-    name: my-frontend-route-ab-unsecured
+        name: f5-demo-app-bg-route
+    name: f5-demo-app-bg-route
     namespace: f5demo
     annotations:
         # Specify a supported BIG-IP load balancing mode
@@ -509,25 +661,27 @@ From ose-master, review the following Route: app-route-ab.yaml
         virtual-server.f5.com/health: |
         [
             {
-            "path": "mysite-ab.f5demo.com/",
+            "path": "mysite-bg.f5demo.com/",
             "send": "HTTP GET /",
             "interval": 5,
             "timeout": 10
             }
         ]
     spec:
-    host: mysite-ab.f5demo.com
+    host: mysite-bg.f5demo.com
     path: "/"
     port:
-        targetPort: 8080
+        targetPort: 80
     to:
         kind: Service
-        name: my-frontend-ab-v1
+        name: node-blue
         weight: 20
     alternateBackends:
     - kind: Service
-        name: my-frontend-ab-v2
+        name: node-green
         weight: 10
+
+Note how the Route resource refers to two different services:  The first service is for the "Blue" application with a weight of 20 and the second service is for the "Green" application with a weight of 10.
 
 
 Now that we have reviewed the Route, we need to actually create it by deploying it to OpenShift by using the **oc create** command:
@@ -537,25 +691,70 @@ Now that we have reviewed the Route, we need to actually create it by deploying 
     [root@ose-mstr01 garrison]# oc create -f app-route-ab.yaml
     route "my-frontend-route-ab-unsecured" created
 
-Verify that the Route was successfully creating by using the OpenShift **oc get route** command.  Note that, under the "SERVICES" column, the two applications are listed along with their request distribution percentages.
+Verify that the Route was successfully creating by using the OpenShift **oc get route** command.  Note that, under the **"SERVICES"** column, the two applications are listed along with their request distribution percentages.
 
 .. code-block:: console
 
-    [root@ose-mstr01 garrison]# oc get route
-    NAME                             HOST/PORT              PATH      SERVICES                                        PORT      TERMINATION   WILDCARD
-    my-frontend-route-ab-unsecured   mysite-ab.f5demo.com   /         my-frontend-ab-v1(66%),my-frontend-ab-v2(33%)   8080                    None
+    [root@ose-mstr01 tmp]# oc get route
+    NAME                   HOST/PORT              PATH      SERVICES                         PORT      TERMINATION   WILDCARD
+    f5-demo-app-bg-route   mysite-bg.f5demo.com   /         node-blue(66%),node-green(33%)   80                      None
+
+
+Knowledge Check: What would the Route percentages be if the weights were 10 and 40?
 
 
 **Step 4:** Review BIG-IP configuration
 
-TODO
+In this step, we will examine the BIG-IP configuration for changes made by the Container Connector after the the OpenShift Route was deployoed.
+
+Navigate to **Local Traffic -> Pools -> Pool List** and change the partition to **ocp** using the dropdown in the upper right.
+
+. image:: /_static/class5/ha-cluster.jpg
+
+Note that there are two pools defined: one pool for the "Blue" application and a second pool for the "Green" application. Additionally, the Container Connector also creates an iRule and
+a datagroup that the BIG-IP uses to distribute traffic based on the weights assigned in the OpenShift Route.
+
+
+**Step XX:** Test the application
+
+In this step, you will use a browser to access blue and green applications you previously deployed.
+
+Because the Route resource you created specifies a hostname for the path, you will need to use a hostname instead of an IP address to access the demo application. 
+Open a new browser tab and enter the hostname **mysite-bg.f5demo.com** in to the address bar:
+
+.. image:: /_static/class5/ha-cluster.jpg
+
+Refresh the browser several times and you should see the web page periodically change from the "Blue" application to the "Green" application as noted by the colors on the page.
+
+.. image:: /_static/class5/ha-cluster.jpg
+
+.. image:: /_static/class5/ha-cluster.jpg
+
+
+**Step XX:** Cleanup deployed resources
+
+In this step, you will remove the Deployment, Service and Route resources you created in the previous steps using the OpenShift **oc delete** command.
+
+From ose-master server, issue the following commands:
+
+.. code-block:: console
+
+    [root@ose-mstr01 tmp]# oc delete -f f5-demo-app-bg-route.yaml
+    route "f5-demo-app-bg-route" deleted
+
+    [root@ose-mstr01 tmp]# oc delete -f f5-demo-app-bg-deployment.yaml
+    deployment "node-blue" deleted
+    service "node-blue" deleted
+    deployment "node-green" deleted
+    service "node-green" deleted
+
 
 
 Excercise #4: Route - Attach Existing Virtual
 ---------------------------------------------
 
 The F5 Container Connector allows you to set a few virtual server configuration elements such as...  If there are virtual server configuration settings that 
-you want to set but aren't configurable in an OpenShift Route, the Container Connector supports defining and using an existing virtual server and this allows you to set configuration
+you want to set but aren't configurable using an OpenShift Route, the Container Connector supports defining and using an existing virtual server and this allows you to set configuration
 elements of the virtual server that the Container Connector doesn't manage without it removing those changes.
 
 
