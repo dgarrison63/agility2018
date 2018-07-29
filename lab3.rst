@@ -380,18 +380,18 @@ TODO
 
 
 
-Excercise #3: Route - A/B Testing
+Excercise #3: Route - Blue/Green Testing
 ---------------------------------
 
-The F5 Container Connector supports A/B application testing e.g two different versions of the same application, by using the **weight** parameter of OpenShift Routes.  The **weight** parameter allows you
-to establish relative ratios between application "A" and application "B". So, for example, if the first route specifies a weight of 20 and the second a weight of 10,
+The F5 Container Connector supports Blue/Green application testing e.g two different versions of the same application, by using the **weight** parameter of OpenShift Routes.  The **weight** parameter allows you
+to establish relative ratios between application **Blue* and application **Green**. So, for example, if the first route specifies a weight of 20 and the second a weight of 10,
 the application associated with the first route will get twice the number of requests as the application associated with the second route.
 
 Just as in the previous excercise, the F5 Container Connector reads the Route resource and creates a virtual server, node(s), a pool per route path and pool members.  Additionally, the Container Connector
 creates a layer 7 BIG-IP traffic policy and associates it with the virtual server.  This layer 7 traffic policy evaluates the hostname or URI path from the request and
 forwards the traffic to the pool associated with that path.
 
-However, in order to support A/B testing using OpenShift routes, the Container Connector creates an iRule and a datagroup on the BIG-IP which handles the connection routing based on the assigned weights.
+However, in order to support Blue/Green testing using OpenShift routes, the Container Connector creates an iRule and a datagroup on the BIG-IP which handles the connection routing based on the assigned weights.
 
 To complete this exercise, we will perform the following steps:
 
@@ -403,7 +403,7 @@ To complete this exercise, we will perform the following steps:
 
 **Step 1:** Deploy version 1 and version 2 of demo application and their related Services
 
-From ose-master, review the following deployment: app-deployment-ab.yaml
+From ose-master, review the following deployment: app-deployment-ab.yaml.  
 
 .. code-block:: console
 
@@ -487,7 +487,7 @@ Now that we have reviewed the Deployment, we need to actually create it by deplo
 
 
 
-**Step 2:** Create OpenShift Route for A/B testing
+**Step 2:** Create OpenShift Route for Blue/Green
 
 The basic Route example from the previous excercise only included one path.  In order to support A/B application testing, a Route must be created that has two paths.
 In OpenShift, the second path is defined in the **alternateBackends** section of a Route resource.
@@ -638,7 +638,7 @@ original: --route-http-vserver=ocp-vserver
 updated:  --route-http-vserver=my-ocp-vserver
 
 original: --route-https-vserver=ocp-https-vserver
- 
+
 updated: --route-https-vserver=-my-ocp-https-vserver
 
 **Step 4:** Restart the Container Connectors
