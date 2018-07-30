@@ -205,13 +205,13 @@ were created by the Container Connector using the declarations defined in the Co
 
 .. image:: /_static/class5/ha-cluster.jpg
 
-**Knowledge Check:** In the network map view, what type OpenShift object type does the pool member IP address represent?  How was the IP address assigned?
+*Knowledge Check: In the network map view, what type OpenShift object type does the pool member IP address represent?  How was the IP address assigned?*
 
 To view the IP address of the virtual server, hover your cursor over the name of the virtual server:
 
 .. image:: /_static/class5/ha-cluster.jpg
 
-**Knowledge Check:** What OpenShift object type was used to define the virtual server IP address?
+*Knowledge Check: What OpenShift resource type was used to define the virtual server IP address?*
 
 TODO
 
@@ -460,7 +460,7 @@ Next, click on the rule name listed under the **Rules** section of the policy pa
 
 On the rule page, review the configuration of the rule and note the match condition and rule action settings.
 
-**Knowledge Check:** Which OpenShift resource defines the hostname to match against?
+*Knowledge Check: Which OpenShift resource type defines the hostname to match against?*
 
 
 **Step 5:** Test the application
@@ -700,7 +700,7 @@ Verify that the Route was successfully creating by using the OpenShift **oc get 
     f5-demo-app-bg-route   mysite-bg.f5demo.com   /         node-blue(66%),node-green(33%)   80                      None
 
 
-**Knowledge Check:** What would the Route percentages be if the weights were 10 and 40?
+*Knowledge Check: What would the Route percentages be if the weights were 10 and 40?*
 
 
 **Step 4:** Review BIG-IP configuration
@@ -770,7 +770,7 @@ To complete this exercise, we will perform the following steps:
 
 In order to create new virtual servers instances and not have them deleted by the Container Connector, we first have to delete the running Container Connector deployments.
 
-First, we need to get the names of the Container Connector deployments.
+First, we need to get the names of the Container Connector deployments.  Because the Container Connectors are deployed in a different project (namespace), we have to indicate the namespace when we run the OpenShift command using the **-n** parameter.
 
 From the ose-master server, run the following commands:
 
@@ -783,6 +783,10 @@ From the ose-master server, run the following commands:
 
 
 You can see the names (bigip01-ctlr, bigip02-ctlr) in the command output.  Next we will use the **oc delete** command to delete these two deployments.
+
+. NOTE::
+
+    The Container Connectors are control plane elements and deleting them does NOT cause a traffic disruption.  What's configured on the BIG-IP remains in place, but any changes to the OpenShift environment will not be reflected on the BIG-IP until the Container Connectors are deployed again.
 
 From the ose-master, run the following command:
 
@@ -797,18 +801,17 @@ From the ose-master, run the following command:
 
 **Step 2:** Create a virtual server for HTTP traffic and a virtual server for HTTPS traffic and attach metadata
 
-In this step, we will use BIG-IP TMSH commands to create an HTTP virtual server and attach some metadata.  The metadata tells the Container Connector to not remove any configuration setting that are 
-not defined by an OpenShift Route resource.
+In this step, we will use BIG-IP TMSH commands to create an HTTP virtual server and attach some metadata.  The metadata tells the Container Connector to not remove any configuration setting that are not defined by an OpenShift Route resource.
 
-Because the lab uses to BIG-IPs in an HA pair but without config autosync enabled, the TMSH commands must be run on each BIG-IP (or should we issue sync command?)
+Because the lab uses two BIG-IPs in an HA pair but without config autosync enabled, the TMSH commands must be run on each BIG-IP (or should we issue sync command?)
 
 Connect to BIG-IP01 and BIG-IP02 via SSH using the mRemoteNG application and issue the following commands on each BIG-IP:
 
 .. code-block:: console
 
-    tmsh create ltm virtual my-ose-vserver destination "10.10.201.240:80" ip-protocol "6" profiles add { http } metadata add { cccl-whitelist { value 1 }}
+    tmsh create ltm virtual my-ose-vserver destination "10.10.201.120:80" ip-protocol "6" profiles add { http } metadata add { cccl-whitelist { value 1 }}
 
-    tmsh create ltm virtual my-ose-https-vserver destination "10.10.201.240:443" ip-protocol "6" profiles add { http {} clientssl {context clientside}} metadata add { cccl-whitelist { value 1 }}
+    tmsh create ltm virtual my-ose-https-vserver destination "10.10.201.120:443" ip-protocol "6" profiles add { http {} clientssl {context clientside}} metadata add { cccl-whitelist { value 1 }}
 
 
 **Step 3:** Edit the Container Connector deployment configurations
@@ -819,8 +822,7 @@ Connect to BIG-IP01 and BIG-IP02 via SSH using the mRemoteNG application and iss
     there is a 1:1 relationship between a ConfigMap and BIG-IP virtual servers e.g. a BIG-IP virtual server will be created for each ConfigMap that has an F5 label defined.
 
 
-In addition to the whitelist metadata that was added when the two virtual servers were created in the previous step, the Container Connector deployment configuration 
-must be updated with the names of those two virtual servers.
+In addition to the whitelist metadata that was added when the two virtual servers were created in the previous step, the Container Connector deployment configuration must be updated with the names of those two virtual servers.
 
 From ose-master, use vi to edit the two Container Connector deployment configuration files one at a time:
 
@@ -836,9 +838,12 @@ original: --route-http-vserver=ocp-vserver
 
 updated:  --route-http-vserver=my-ocp-vserver
 
+
 original: --route-https-vserver=ocp-https-vserver
 
 updated: --route-https-vserver=-my-ocp-https-vserver
+
+
 
 **Step 4:** Restart the Container Connectors
 
